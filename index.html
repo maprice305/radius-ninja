@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Draw a circle on a map</title>
+    <style>
+      html, body, #map-canvas {
+        height: 100%;
+        margin: 0px;
+        padding: 0px
+      }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+    <script src="https://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script>
+    jQuery(function($){
+
+      function drawMap(lat, lng) {
+        console.log('Draw map');
+        var center = new google.maps.LatLng(lat, lng);
+
+        // Create the map.
+        var mapOptions = {
+          zoom: 14,
+          center: new google.maps.LatLng(lat, lng)
+        };
+
+        map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+        drawCircle(new google.maps.LatLng(lat, lng));
+      }
+
+      function redrawCircle(e) {
+        e.preventDefault();
+        address = $('#address').val();
+        console.log("Geocoding "+address);
+        geocoder = new google.maps.Geocoder();
+        geocoder.geocode( { 'address': address }, function(results, status) {
+          if (status == google.maps.GeocoderStatus.OK) {
+            drawCircle(results[0].geometry.location);
+          } else {
+            alert('Geocode was not successful for the following reason: ' + status);
+          }
+        });
+      }
+
+      var circle;
+
+      function drawCircle(center) {
+        console.log("Drawing circle at"+center);
+        var radius = parseFloat($('#radius').val()) * 1609.34 || 1609.34;
+        map.setCenter(center);
+        if(circle) {
+          circle.setCenter(center);
+          circle.setRadius(radius);
+        } else {
+          circle = new google.maps.Circle({
+            strokeColor: '#0000FF',
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: '#0000FF',
+            fillOpacity: 0.35,
+            map: map,
+            center: center,
+            radius: radius
+          });
+        }
+      }
+
+      $('form').submit(redrawCircle);
+      $('#address, #radius').change(redrawCircle);
+      drawMap(39.28595, -76.61207);
+    });
+    </script>
+  </head>
+  <body>
+    <div id="map-canvas"></div>
+    <form style="position: absolute; top: 20px; left: 100px">
+      <input id="address" type="text" style="font-size: 18px; padding: 5px; width: 400px"/>
+      <input id="radius" type="text" style="font-size: 18px; padding: 5px; width: 50px" value="1.0"/>
+    </form>
+  </body>
+</html>
